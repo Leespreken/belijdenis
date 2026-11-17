@@ -27,18 +27,15 @@ export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: 
   );
   const gedaan = les.vragen.filter((v) => klaar[v.id]).length;
   const reproVragen = les.vragen.filter((v): v is typeof v & { reproductie: NonNullable<typeof v.reproductie> } => !!v.reproductie);
-  let volgNr = 3;
-  const reproNr = reproVragen.length > 0 ? volgNr++ : 0;
-  const extraNr = extra.length > 0 ? volgNr++ : 0;
 
   return (
     <>
       <ActieveTab les={les.nr} tab={tab} />
       <nav className="tabs" role="tablist" aria-label="Onderdelen">
-        <button role="tab" aria-selected={tab === "lezen"} onClick={() => setTab("lezen")}>1. De les</button>
-        <button role="tab" aria-selected={tab === "vragen"} onClick={() => setTab("vragen")}>2. Vragen</button>
-        {reproVragen.length > 0 && <button role="tab" aria-selected={tab === "reproduceren"} onClick={() => setTab("reproduceren")}>{reproNr}. Reproduceren</button>}
-        {extra.length > 0 && <button role="tab" aria-selected={tab === "extra"} onClick={() => setTab("extra")}>{extraNr}. Extra</button>}
+        <button role="tab" aria-selected={tab === "lezen"} onClick={() => setTab("lezen")}>Les</button>
+        <button role="tab" aria-selected={tab === "vragen"} onClick={() => setTab("vragen")}>Vragen</button>
+        {reproVragen.length > 0 && <button role="tab" aria-selected={tab === "reproduceren"} onClick={() => setTab("reproduceren")}>Oefenen</button>}
+        {extra.length > 0 && <button role="tab" aria-selected={tab === "extra"} onClick={() => setTab("extra")}>Extra</button>}
       </nav>
 
       {tab === "lezen" && (
