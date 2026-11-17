@@ -68,6 +68,7 @@ input.invul.fout{background:var(--badbg);border-color:#e3bcbc}
 @media(max-width:600px){.grid2{grid-template-columns:1fr}body{font-size:16px}.top h1{font-size:1.4rem}}
 .titelblok{text-align:center;padding:40px 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px}
 .titelblok .kicker{margin-top:16px}
+.titelblok .gemeente{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .titelblok h1{font-size:2.3rem;margin:.1em 0}
 .titelblok .ondertitel{font-family:Lora,Georgia,serif;font-style:italic;color:var(--muted);line-height:1.5;margin:0 0 .4em}
 .kerklogo{width:min(280px,80%);height:auto;margin:0 auto;display:block}

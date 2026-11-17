@@ -11,6 +11,7 @@ export default async function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="kerklogo" src="/kerklogo.png" alt="De Bethlehemkerk" width={1577} height={639} />
         <div className="kicker">Belijdeniscatechese Bethlehemkerk</div>
+        <div className="gemeente">Gereformeerde Gemeente Woerden</div>
         <h1>Welkom</h1>
         <p className="ondertitel">Thema&rsquo;s uit de Gereformeerde geloofsleer,<br/>toegelicht vooral vanuit het Kort Begrip</p>
       </div>
