@@ -40,11 +40,8 @@ export default async function LesPagina({ params }: { params: { n: string } }) {
           Er {teHerhalen === 1 ? "staat 1 onderdeel" : `staan ${teHerhalen} onderdelen`} klaar om te herhalen. <Link href="/onthouden">Nu herhalen →</Link>
         </div>
       )}
-      <LesClient les={les} opgeslagen={a.data ?? []} extra={e.data ?? []} />
-      <nav className="lesnav">
-        {vorige ? <Link className="knop" href={`/les/${vorige.nr}`}>← Les {vorige.nr}: {vorige.titel}</Link> : <span />}
-        {volgende ? <Link className="knop primary" href={`/les/${volgende.nr}`}>Les {volgende.nr}: {volgende.titel} →</Link> : <span />}
-      </nav>
+      <LesClient les={les} opgeslagen={a.data ?? []} extra={e.data ?? []}
+        vorige={vorige && { nr: vorige.nr, titel: vorige.titel }} volgende={volgende && { nr: volgende.nr, titel: volgende.titel }} />
     </div>
   );
 }

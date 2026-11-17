@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import type { Les } from "@/lib/content";
 import { kernpunten } from "@/lib/content";
 import { opslaan } from "@/lib/opslaan";
@@ -15,7 +16,11 @@ function ActieveTab({ les, tab }: { les: number; tab: string }) {
   return fout ? <p className="fout" role="alert">{fout}</p> : null;
 }
 
-export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgeslagen: Opgeslagen[]; extra: ExtraItem[] }) {
+type LesLink = { nr: number; titel: string };
+
+export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: {
+  les: Les; opgeslagen: Opgeslagen[]; extra: ExtraItem[]; vorige?: LesLink; volgende?: LesLink;
+}) {
   const [tab, setTab] = useState<Tab>("lezen");
   const [klaar, setKlaar] = useState<Record<number, { antwoord: string; zelf: number | null }>>(
     Object.fromEntries(opgeslagen.map((o) => [o.vraag, { antwoord: o.antwoord, zelf: o.zelf }]))
@@ -78,6 +83,13 @@ export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgesl
             </div>
           ))}
         </section>
+      )}
+
+      {tab !== "reproduceren" && (vorige || volgende) && (
+        <nav className="lesnav">
+          {vorige ? <Link className="knop" href={`/les/${vorige.nr}`}>← Les {vorige.nr}: {vorige.titel}</Link> : <span />}
+          {volgende ? <Link className="knop primary" href={`/les/${volgende.nr}`}>Les {volgende.nr}: {volgende.titel} →</Link> : <span />}
+        </nav>
       )}
     </>
   );
