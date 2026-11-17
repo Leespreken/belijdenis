@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { normaal } from "@/lib/content";
+import { opslaan } from "@/lib/opslaan";
 import { useActief } from "./useActief";
 
 export type Kaart = { les: number; vraag: number; tekst: string; invul: string };
@@ -18,15 +19,18 @@ function parse(s: string): Deel[] {
 }
 
 export default function Herhaal({ kaarten, leesLes }: { kaarten: Kaart[]; leesLes: number }) {
-  useActief(leesLes, "onthouden");
+  const tijdFout = useActief(leesLes, "onthouden");
   const [i, setI] = useState(0);
   const [waarden, setWaarden] = useState<string[]>([]);
   const [uitslag, setUitslag] = useState<boolean[] | null>(null);
   const [goed, setGoed] = useState(0);
+  const [bezig, setBezig] = useState(false);
+  const [fout, setFout] = useState<string | null>(null);
 
-  if (!kaarten.length) return <div className="card">Er is nu niets om te herhalen. Kom morgen terug.</div>;
+  if (!kaarten.length) return <div className="card">Er is nu niets om te herhalen. Kom morgen terug.{tijdFout && <p className="fout" role="alert">{tijdFout}</p>}</div>;
   if (i >= kaarten.length) return (
     <div className="card">
+      {tijdFout && <p className="fout" role="alert">{tijdFout}</p>}
       <h2 style={{ marginTop: 0 }}>Klaar voor nu</h2>
       <p>Je had {goed} van de {kaarten.length} helemaal goed. Wat je goed deed, komt later terug; wat nog niet lukte, morgen alweer.</p>
       <a className="knop primary" href={`/les/${leesLes}`}>Terug naar de les</a>
@@ -39,16 +43,22 @@ export default function Herhaal({ kaarten, leesLes }: { kaarten: Kaart[]; leesLe
 
   async function controleer() {
     const u = gaten.map((g, n) => g.gat.some((a) => normaal(a) === normaal(waarden[n] || "")));
-    setUitslag(u);
     const allesGoed = u.every(Boolean);
-    if (allesGoed) setGoed((x) => x + 1);
-    fetch("/api/herhaling", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ les: k.les, vraag: k.vraag, goed: allesGoed }) }).catch(() => {});
+    setBezig(true); setFout(null);
+    try {
+      await opslaan("/api/herhaling", { les: k.les, vraag: k.vraag, goed: allesGoed });
+      setUitslag(u);
+      if (allesGoed) setGoed((x) => x + 1);
+    } catch {
+      setFout("Je herhaling is niet bevestigd als opgeslagen. Je ingevulde woorden staan er nog; probeer opnieuw.");
+    } finally { setBezig(false); }
   }
   function volgende() { setI(i + 1); setWaarden([]); setUitslag(null); }
 
   let gatNr = -1;
   return (
     <div className="card">
+      {tijdFout && <p className="fout" role="alert">{tijdFout}</p>}
       <div className="qnum">Herhalen {i + 1} van {kaarten.length}</div>
       <div className="qtext">{k.tekst}</div>
       <p className="note">Vul de ontbrekende woorden in.</p>
@@ -58,7 +68,7 @@ export default function Herhaal({ kaarten, leesLes }: { kaarten: Kaart[]; leesLe
           gatNr++; const g = gatNr;
           return (
             <input key={n} className={"invul" + (uitslag ? (uitslag[g] ? " goed" : " fout") : "")} aria-label={`Ontbrekend woord ${g + 1}`}
-              value={waarden[g] || ""} readOnly={!!uitslag} autoComplete="off" autoCapitalize="none" spellCheck={false}
+              value={waarden[g] || ""} readOnly={!!uitslag || bezig} autoComplete="off" autoCapitalize="none" spellCheck={false}
               onChange={(e) => setWaarden((w) => { const c = [...w]; c[g] = e.target.value; return c; })}
               />
           );
@@ -70,8 +80,9 @@ export default function Herhaal({ kaarten, leesLes }: { kaarten: Kaart[]; leesLe
         </p>
       )}
       <div className="row">
-        {!uitslag ? <button className="primary" onClick={controleer}>Controleer</button> : <button className="primary" onClick={volgende}>{i + 1 < kaarten.length ? "Volgende" : "Afronden"}</button>}
+        {!uitslag ? <button className="primary" disabled={bezig} onClick={controleer}>Controleer</button> : <button className="primary" onClick={volgende}>{i + 1 < kaarten.length ? "Volgende" : "Afronden"}</button>}
       </div>
+      {fout && <p className="fout" role="alert">{fout}</p>}
     </div>
   );
 }

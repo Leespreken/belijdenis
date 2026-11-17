@@ -14,14 +14,16 @@ export async function POST(req: NextRequest) {
 
   if (b.actie === "zelf") {
     const z = [0, 1, 2].includes(b.zelf) ? b.zelf : null;
-    await db().from("antwoorden").update({ zelf: z }).match({ catechisant_id: c.id, les: b.les, vraag: b.vraag });
+    const { error } = await db().from("antwoorden").update({ zelf: z }).match({ catechisant_id: c.id, les: b.les, vraag: b.vraag });
+    if (error) return NextResponse.json({ ok: false }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
 
   const antwoord = String(b.antwoord || "").slice(0, 3000);
   const kern = v.open ? 0 : kernpunten(v, antwoord).filter(Boolean).length;
-  const { data: oud } = await db().from("antwoorden").select("poging").match({ catechisant_id: c.id, les: b.les, vraag: b.vraag }).maybeSingle();
-  await db().from("antwoorden").upsert({
+  const { data: oud, error: leesFout } = await db().from("antwoorden").select("poging").match({ catechisant_id: c.id, les: b.les, vraag: b.vraag }).maybeSingle();
+  if (leesFout) return NextResponse.json({ ok: false }, { status: 500 });
+  const { error: opslagFout } = await db().from("antwoorden").upsert({
     catechisant_id: c.id, les: b.les, vraag: b.vraag, antwoord,
     secs: Math.max(0, Math.min(1800, Math.round(Number(b.secs) || 0))),
     tekens: antwoord.trim().length,
@@ -29,10 +31,15 @@ export async function POST(req: NextRequest) {
     geplakt: !!b.geplakt, kern, kern_totaal: v.kern.length,
     poging: (oud?.poging ?? 0) + 1, zelf: null, gedaan: new Date().toISOString(),
   });
+  if (opslagFout) return NextResponse.json({ ok: false }, { status: 500 });
   if (!v.open && v.invul) {
     // Eerste keer: morgen herhalen
-    const { data: h } = await db().from("herhaling").select("vraag").match({ catechisant_id: c.id, les: b.les, vraag: b.vraag }).maybeSingle();
-    if (!h) await db().from("herhaling").insert({ catechisant_id: c.id, les: b.les, vraag: b.vraag, box: 0, volgende: plusDagen(vandaag(), INTERVALLEN[0]) });
+    const { data: h, error: herhaalLeesFout } = await db().from("herhaling").select("vraag").match({ catechisant_id: c.id, les: b.les, vraag: b.vraag }).maybeSingle();
+    if (herhaalLeesFout) return NextResponse.json({ ok: false }, { status: 500 });
+    if (!h) {
+      const { error } = await db().from("herhaling").insert({ catechisant_id: c.id, les: b.les, vraag: b.vraag, box: 0, volgende: plusDagen(vandaag(), INTERVALLEN[0]) });
+      if (error) return NextResponse.json({ ok: false }, { status: 500 });
+    }
   }
   return NextResponse.json({ ok: true, kern });
 }
