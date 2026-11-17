@@ -1,6 +1,8 @@
 import { LES1_HTML } from "./les1-tekst";
 import { LES2_HTML } from "./les2-tekst";
 import { LES3_HTML, LES3_BIJLEZEN_HTML, LES3_BIJLEZEN_TITEL } from "./les3-tekst";
+import { LES8_HTML, LES8_BIJLEZEN_HTML, LES8_BIJLEZEN_TITEL } from "./les8-tekst";
+import { LES9_HTML, LES9_BIJLEZEN_HTML, LES9_BIJLEZEN_TITEL } from "./les9-tekst";
 
 export type Vraag = {
   id: number;
