@@ -8,9 +8,9 @@ export function eenInzet(r: AntwoordRij, open: boolean): "zelf" | "matig" | "doo
   if (r.secs >= 15 && r.getypt >= 15 && (open ? r.tekens >= 40 : true)) return "zelf";
   return "matig";
 }
-export function totaalInzet(rijen: AntwoordRij[], open: (v: number) => boolean): { tekst: string; kleur: "ok" | "mid" | "bad" | "grey" } {
+export function totaalInzet(rijen: (AntwoordRij & { les: number })[], open: (les: number, v: number) => boolean): { tekst: string; kleur: "ok" | "mid" | "bad" | "grey" } {
   if (!rijen.length) return { tekst: "Nog niet begonnen", kleur: "grey" };
-  const e = rijen.map((r) => eenInzet(r, open(r.vraag)));
+  const e = rijen.map((r) => eenInzet(r, open(r.les, r.vraag)));
   const zelf = e.filter((x) => x === "zelf").length / e.length;
   const dk = e.filter((x) => x === "doorgeklikt").length / e.length;
   if (zelf >= 0.6) return { tekst: "Zelf actief bezig", kleur: "ok" };

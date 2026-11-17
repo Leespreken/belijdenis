@@ -19,23 +19,32 @@ export default async function LesPagina({ params }: { params: { n: string } }) {
     db().from("herhaling").select("vraag").match({ catechisant_id: c.id }).lte("volgende", vandaag()),
   ]);
   const teHerhalen = h.data?.length ?? 0;
+  const volgorde = Object.values(LESSEN).sort((x, y) => x.nr - y.nr);
+  const idx = volgorde.findIndex((x) => x.nr === les.nr);
+  const vorige = idx > 0 ? volgorde[idx - 1] : undefined;
+  const volgende = idx >= 0 && idx < volgorde.length - 1 ? volgorde[idx + 1] : undefined;
   return (
     <div className="wrap">
       <header className="top">
         <div>
-          <div className="kicker">Belijdeniscatechese · Les {les.nr}</div>
+          <div className="kicker">Belijdeniscatechese · {les.optioneel ? "Optionele les" : `Les ${les.nr}`}</div>
           <h1>{les.titel}</h1>
           <div className="bijbel">Bijbel: {les.bijbel}</div>
+          {les.overig && les.overig.length > 0 && <div className="overig">{les.overig.join(" · ")}</div>}
         </div>
         <form action={uitloggen}><button className="klein" type="submit">Uitloggen</button></form>
       </header>
-      <p className="note" style={{ margin: "4px 0" }}>Welkom, {c.naam}.</p>
+      <p className="note" style={{ margin: "4px 0" }}>Welkom, {c.naam}. <Link href="/lessen">Alle lessen</Link></p>
       {teHerhalen > 0 && (
         <div className="card" style={{ background: "#f6efe2" }}>
           Er {teHerhalen === 1 ? "staat 1 onderdeel" : `staan ${teHerhalen} onderdelen`} klaar om te herhalen. <Link href="/onthouden">Nu herhalen →</Link>
         </div>
       )}
       <LesClient les={les} opgeslagen={a.data ?? []} extra={e.data ?? []} />
+      <nav className="lesnav">
+        {vorige ? <Link className="knop" href={`/les/${vorige.nr}`}>← Les {vorige.nr}: {vorige.titel}</Link> : <span />}
+        {volgende ? <Link className="knop primary" href={`/les/${volgende.nr}`}>Les {volgende.nr}: {volgende.titel} →</Link> : <span />}
+      </nav>
     </div>
   );
 }

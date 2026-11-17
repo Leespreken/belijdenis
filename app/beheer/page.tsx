@@ -19,8 +19,9 @@ export default async function Beheer() {
     db().from("herhaling").select("catechisant_id,goed,fout"),
     db().from("extra").select("id,les,titel,bron").order("les").order("aangemaakt"),
   ]);
-  const openVraag = (v: number) => !!LESSEN[3].vragen.find((x) => x.id === v)?.open;
-  const aantalVragen = LESSEN[3].vragen.length;
+  const lessen = Object.values(LESSEN).sort((a, b) => a.nr - b.nr);
+  const openVraag = (les: number, v: number) => !!LESSEN[les]?.vragen.find((x) => x.id === v)?.open;
+  const aantalVragen = lessen.reduce((s, l) => s + l.vragen.length, 0);
 
   const rijen = (cs.data ?? []).map((c) => {
     const a = (act.data ?? []).filter((x) => x.catechisant_id === c.id);
@@ -73,12 +74,15 @@ export default async function Beheer() {
         </form>
         <form action={nieuweExtra} className="card">
           <h3 style={{ marginTop: 0 }}>Extra materiaal bij een les</h3>
-          <input type="hidden" name="les" value="3" />
-          <label htmlFor="titel">Titel</label><input id="titel" name="titel" type="text" required />
+          <label htmlFor="les">Les</label>
+          <select id="les" name="les">
+            {lessen.map((l) => <option key={l.nr} value={l.nr}>{l.optioneel ? "Optioneel" : `Les ${l.nr}`}: {l.titel}</option>)}
+          </select>
+          <label htmlFor="titel" style={{ marginTop: 8 }}>Titel</label><input id="titel" name="titel" type="text" required />
           <label htmlFor="bron" style={{ marginTop: 8 }}>Bron (krant, datum)</label><input id="bron" name="bron" type="text" />
           <label htmlFor="tekst" style={{ marginTop: 8 }}>Tekst (lege regel = nieuwe alinea)</label><textarea id="tekst" name="tekst" />
           <label htmlFor="link" style={{ marginTop: 8 }}>Link (https://…, mag leeg)</label><input id="link" name="link" type="text" />
-          <div className="row"><button className="primary" type="submit">Toevoegen aan les 3</button></div>
+          <div className="row"><button className="primary" type="submit">Toevoegen</button></div>
         </form>
       </div>
 

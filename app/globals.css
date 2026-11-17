@@ -24,6 +24,9 @@ nav.tabs button[aria-selected="true"]{background:var(--accent);color:#fff;border
 .lesson h2{font-size:1.2rem;margin:1.4em 0 .3em}
 .lesson p{margin:.5em 0}
 .lesson ol,.lesson ul{padding-left:1.3em}
+.lesson blockquote{background:#f6efe2;border-left:3px solid var(--accent-2);padding:2px 16px;margin:1em 0;border-radius:0 8px 8px 0;font-size:.97rem}
+.lesson blockquote p{margin:.6em 0}
+.lesson blockquote cite{display:block;margin-top:.4em;font-size:.85rem;color:var(--muted);font-style:normal}
 details.more{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:6px 14px;margin:14px 0}
 details.more summary{cursor:pointer;padding:8px 0;font-weight:600;color:var(--accent)}
 label{display:block;font-weight:600;margin-bottom:4px}
@@ -56,3 +59,21 @@ input.invul.fout{background:var(--badbg);border-color:#e3bcbc}
 .fout{color:var(--bad)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:600px){.grid2{grid-template-columns:1fr}body{font-size:16px}.top h1{font-size:1.4rem}}
+.titelblok{text-align:center;padding:36px 0 18px}
+.titelblok .kicker{margin-top:14px}
+.titelblok h1{font-size:2.1rem;margin:.1em 0}
+.titelblok .ondertitel{font-family:Lora,Georgia,serif;font-style:italic;color:var(--muted);line-height:1.5;margin:0 0 .4em}
+.ichthus{width:120px;height:auto;margin:0 auto;display:block}
+.ichthus path{fill:none;stroke:var(--accent);stroke-width:5}
+.ichthus line{stroke:var(--accent);stroke-width:5}
+.lesgrid{display:grid;gap:10px;margin:14px 0}
+.leskaart{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink)}
+.leskaart:hover{border-color:var(--accent-2)}
+.leskaart .nr{font-family:Lora,Georgia,serif;font-weight:600;color:var(--accent);font-size:1.3rem;min-width:1.6em;text-align:center}
+.leskaart .info{flex:1;min-width:0}
+.leskaart .titel{font-weight:600}
+.leskaart .sub{font-size:.85rem;color:var(--muted)}
+.leskaart.klaar{border-color:#b9d8c4}
+.leskaart.klaar .nr{color:var(--ok)}
+.lesnav{display:flex;justify-content:space-between;gap:8px;margin:18px 0;flex-wrap:wrap}
+.overig{color:var(--muted);font-size:.85rem;margin-top:2px}

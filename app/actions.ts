@@ -11,7 +11,7 @@ export async function inloggen(_: unknown, fd: FormData) {
   const { data } = await db().from("catechisanten").select("id").eq("code", code).maybeSingle();
   if (!data) { await new Promise((r) => setTimeout(r, 800)); return { fout: "Deze code ken ik niet. Controleer of je hem goed hebt overgenomen." }; }
   zetSessie(data.id);
-  redirect("/les/3");
+  redirect("/lessen");
 }
 export async function uitloggen() { wisSessie(); redirect("/"); }
 
