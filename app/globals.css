@@ -70,7 +70,7 @@ input.invul.fout{background:var(--badbg);border-color:#e3bcbc}
 .leskaart{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink)}
 .leskaart:hover{border-color:var(--accent-2)}
 .leskaart .nr{font-family:Lora,Georgia,serif;font-weight:600;color:var(--accent);font-size:1.3rem;min-width:1.6em;text-align:center}
-.leskaart .info{flex:1;min-width:0}
+.leskaart .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .leskaart .titel{font-weight:600}
 .leskaart .sub{font-size:.85rem;color:var(--muted)}
 .leskaart.klaar{border-color:#b9d8c4}
