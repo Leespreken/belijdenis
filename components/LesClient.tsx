@@ -2,13 +2,17 @@
 import { useState } from "react";
 import type { Les } from "@/lib/content";
 import { kernpunten } from "@/lib/content";
+import { opslaan } from "@/lib/opslaan";
 import { useActief } from "./useActief";
 
 export type Opgeslagen = { vraag: number; antwoord: string; zelf: number | null };
 export type ExtraItem = { id: string; titel: string; bron: string | null; tekst: string | null; link: string | null };
 type Tab = "lezen" | "vragen" | "extra";
 
-function ActieveTab({ les, tab }: { les: number; tab: string }) { useActief(les, tab); return null; }
+function ActieveTab({ les, tab }: { les: number; tab: string }) {
+  const fout = useActief(les, tab);
+  return fout ? <p className="fout" role="alert">{fout}</p> : null;
+}
 
 export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgeslagen: Opgeslagen[]; extra: ExtraItem[] }) {
   const [tab, setTab] = useState<Tab>("lezen");
@@ -77,18 +81,28 @@ function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
   const [getypt, setGetypt] = useState(0);
   const [geplakt, setGeplakt] = useState(false);
   const [bezig, setBezig] = useState(false);
+  const [fout, setFout] = useState<string | null>(null);
 
   async function toon() {
-    setBezig(true);
+    setBezig(true); setFout(null);
     const secs = start ? Math.round((Date.now() - start) / 1000) : 0;
-    await fetch("/api/antwoord", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ actie: "toon", les: les.nr, vraag: v.id, antwoord: tekst, secs, getypt, geplakt }) }).catch(() => {});
-    onKlaar(tekst); setBezig(false);
+    try {
+      await opslaan("/api/antwoord", { actie: "toon", les: les.nr, vraag: v.id, antwoord: tekst, secs, getypt, geplakt });
+      onKlaar(tekst);
+    } catch {
+      setFout("Je antwoord is niet bevestigd als opgeslagen. Je tekst staat er nog; probeer opnieuw.");
+    } finally { setBezig(false); }
   }
   async function zelf(z: number) {
-    onZelf(z);
-    fetch("/api/antwoord", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ actie: "zelf", les: les.nr, vraag: v.id, zelf: z }) }).catch(() => {});
+    setBezig(true); setFout(null);
+    try {
+      await opslaan("/api/antwoord", { actie: "zelf", les: les.nr, vraag: v.id, zelf: z });
+      onZelf(z);
+    } catch {
+      setFout("Je beoordeling is niet opgeslagen. Probeer opnieuw.");
+    } finally { setBezig(false); }
   }
-  function opnieuw() { setTekst(""); setStart(0); setGetypt(0); setGeplakt(false); onOpnieuw(); }
+  function opnieuw() { setTekst(""); setStart(0); setGetypt(0); setGeplakt(false); setFout(null); onOpnieuw(); }
   const cov = klaar && !v.open ? kernpunten(v, klaar.antwoord) : [];
   const aantal = cov.filter(Boolean).length;
 
@@ -99,7 +113,7 @@ function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
       <textarea
         aria-label={"Jouw antwoord op: " + v.tekst}
         placeholder="Schrijf hier je antwoord in je eigen woorden…"
-        value={klaar ? klaar.antwoord : tekst} readOnly={!!klaar}
+        value={klaar ? klaar.antwoord : tekst} readOnly={!!klaar || bezig}
         onFocus={() => { if (!start) setStart(Date.now()); }}
         onInput={(e) => {
           const ne = e.nativeEvent as InputEvent;
@@ -125,12 +139,13 @@ function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
           <div className="row self">
             <span className="status">Hoe ging het?</span>
             {([["Wist ik", 2], ["Gedeeltelijk", 1], ["Moet ik oefenen", 0]] as const).map(([t, z]) => (
-              <button key={z} aria-pressed={klaar.zelf === z} onClick={() => zelf(z)}>{t}</button>
+              <button key={z} aria-pressed={klaar.zelf === z} disabled={bezig} onClick={() => zelf(z)}>{t}</button>
             ))}
-            <button onClick={opnieuw}>Opnieuw proberen</button>
+            <button disabled={bezig} onClick={opnieuw}>Opnieuw proberen</button>
           </div>
         </>
       )}
+      {fout && <p className="fout" role="alert">{fout}</p>}
     </div>
   );
 }
