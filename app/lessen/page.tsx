@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { huidige } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { LESSEN } from "@/lib/content";
+import { LESSEN, telbareVragen } from "@/lib/content";
 import { uitloggen } from "@/app/actions";
 import { vandaag } from "@/lib/datum";
 
@@ -16,8 +16,13 @@ export default async function Lessen() {
     db().from("antwoorden").select("les,vraag").eq("catechisant_id", c.id),
     db().from("herhaling").select("vraag").eq("catechisant_id", c.id).lte("volgende", vandaag()),
   ]);
+  const openVragen = new Map<number, Set<number>>();
+  lessen.forEach((l) => openVragen.set(l.nr, new Set(l.vragen.filter((v) => v.open).map((v) => v.id))));
   const gedaanPerLes = new Map<number, number>();
-  (a.data ?? []).forEach((r) => gedaanPerLes.set(r.les, (gedaanPerLes.get(r.les) ?? 0) + 1));
+  (a.data ?? []).forEach((r) => {
+    if (openVragen.get(r.les)?.has(r.vraag)) return;
+    gedaanPerLes.set(r.les, (gedaanPerLes.get(r.les) ?? 0) + 1);
+  });
   const teHerhalen = h.data?.length ?? 0;
 
   return (
@@ -36,14 +41,15 @@ export default async function Lessen() {
       <p className="note">Kies een les om te lezen en te oefenen.</p>
       <div className="lesgrid">
         {lessen.map((les) => {
+          const totaal = telbareVragen(les).length;
           const gedaan = gedaanPerLes.get(les.nr) ?? 0;
-          const klaar = gedaan >= les.vragen.length && les.vragen.length > 0;
+          const klaar = gedaan >= totaal && totaal > 0;
           return (
             <Link key={les.nr} href={`/les/${les.nr}`} className={"leskaart" + (klaar ? " klaar" : "")}>
               <span className="nr">{les.optioneel ? "✻" : les.nr}</span>
               <span className="info">
                 <span className="titel">{les.titel}</span>
-                <span className="sub">{les.bijbel}{les.vragen.length > 0 ? ` · ${gedaan} van ${les.vragen.length} onderdelen gedaan` : ""}</span>
+                <span className="sub">{les.bijbel}{totaal > 0 ? ` · ${gedaan} van ${totaal} vragen gedaan` : ""}</span>
               </span>
             </Link>
           );

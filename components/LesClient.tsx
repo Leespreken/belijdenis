@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Les } from "@/lib/content";
-import { kernpunten } from "@/lib/content";
+import { kernpunten, telbareVragen } from "@/lib/content";
 import { opslaan } from "@/lib/opslaan";
 import { useActief } from "./useActief";
 import Reproduceren from "./Reproduceren";
@@ -25,7 +25,8 @@ export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: 
   const [klaar, setKlaar] = useState<Record<number, { antwoord: string; zelf: number | null }>>(
     Object.fromEntries(opgeslagen.map((o) => [o.vraag, { antwoord: o.antwoord, zelf: o.zelf }]))
   );
-  const gedaan = les.vragen.filter((v) => klaar[v.id]).length;
+  const telbare = telbareVragen(les);
+  const gedaan = telbare.filter((v) => klaar[v.id]).length;
   const reproVragen = les.vragen.filter((v): v is typeof v & { reproductie: NonNullable<typeof v.reproductie> } => !!v.reproductie);
 
   return (
@@ -51,12 +52,13 @@ export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: 
       {tab === "vragen" && (
         <section>
           <div className="card">
-            <div className="status">{gedaan} van {les.vragen.length} onderdelen gedaan</div>
-            <div className="progress" aria-hidden><i style={{ width: (gedaan / les.vragen.length) * 100 + "%" }} /></div>
+            <div className="status">{gedaan} van {telbare.length} vragen gedaan</div>
+            <div className="progress" aria-hidden><i style={{ width: (gedaan / telbare.length) * 100 + "%" }} /></div>
             <p className="note" style={{ margin: "8px 0 0" }}>Typ eerst je eigen antwoord. Kijk pas daarna naar het antwoord uit de les.</p>
           </div>
           {les.vragen.map((v, i) => (
-            <VraagKaart key={v.id} les={les} idx={i} klaar={klaar[v.id]} onKlaar={(a) => setKlaar((k) => ({ ...k, [v.id]: { antwoord: a, zelf: null } }))}
+            <VraagKaart key={v.id} les={les} idx={i} totaal={telbare.length} nr={telbare.findIndex((t) => t.id === v.id) + 1}
+              klaar={klaar[v.id]} onKlaar={(a) => setKlaar((k) => ({ ...k, [v.id]: { antwoord: a, zelf: null } }))}
               onZelf={(z) => setKlaar((k) => ({ ...k, [v.id]: { ...k[v.id], zelf: z } }))}
               onOpnieuw={() => setKlaar((k) => { const n = { ...k }; delete n[v.id]; return n; })} />
           ))}
@@ -92,8 +94,12 @@ export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: 
   );
 }
 
-function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
-  les: Les; idx: number; klaar?: { antwoord: string; zelf: number | null };
+function genoegWoorden(t: string) {
+  return t.trim().split(/\s+/).filter((w) => w.length >= 2).length >= 3;
+}
+
+function VraagKaart({ les, idx, totaal, nr, klaar, onKlaar, onZelf, onOpnieuw }: {
+  les: Les; idx: number; totaal: number; nr: number; klaar?: { antwoord: string; zelf: number | null };
   onKlaar: (a: string) => void; onZelf: (z: number) => void; onOpnieuw: () => void;
 }) {
   const v = les.vragen[idx];
@@ -129,7 +135,7 @@ function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
 
   return (
     <div className="card">
-      <div className="qnum">{v.open ? "Om over na te denken" : `Vraag ${idx + 1} van ${les.vragen.length - 1}`}</div>
+      <div className="qnum">{v.open ? "Om over na te denken" : `Vraag ${nr} van ${totaal}`}</div>
       <div className="qtext">{v.tekst}</div>
       <textarea
         aria-label={"Jouw antwoord op: " + v.tekst}
@@ -144,7 +150,13 @@ function VraagKaart({ les, idx, klaar, onKlaar, onZelf, onOpnieuw }: {
         }}
         onChange={(e) => setTekst(e.target.value)}
       />
-      {!klaar && <div className="row"><button className="primary" disabled={bezig} onClick={toon}>Toon het antwoord uit de les</button></div>}
+      {!klaar && (
+        <div className="row">
+          {genoegWoorden(tekst)
+            ? <button className="primary" disabled={bezig} onClick={toon}>Toon het antwoord uit de les</button>
+            : <p className="note">Schrijf eerst in je eigen woorden een antwoord op; dan verschijnt hier de knop om het antwoord uit de les te bekijken.</p>}
+        </div>
+      )}
       {klaar && (
         <>
           <div className="model">

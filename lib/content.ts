@@ -1132,6 +1132,11 @@ export const LESSEN: Record<number, Les> = {
   17: les17, 18: les18, 19: lesOptioneel,
 };
 
+/** de "echte" vragen van een les, zonder de losse open na-denk-vraag */
+export function telbareVragen(les: Les) {
+  return les.vragen.filter((v) => !v.open);
+}
+
 export function normaal(t: string) {
   return (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 }
