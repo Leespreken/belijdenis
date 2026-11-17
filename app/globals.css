@@ -59,13 +59,13 @@ input.invul.fout{background:var(--badbg);border-color:#e3bcbc}
 .fout{color:var(--bad)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:600px){.grid2{grid-template-columns:1fr}body{font-size:16px}.top h1{font-size:1.4rem}}
-.titelblok{text-align:center;padding:36px 0 18px}
-.titelblok .kicker{margin-top:14px}
-.titelblok h1{font-size:2.1rem;margin:.1em 0}
+.titelblok{text-align:center;padding:40px 0 22px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.titelblok .kicker{margin-top:16px}
+.titelblok h1{font-size:2.3rem;margin:.1em 0}
 .titelblok .ondertitel{font-family:Lora,Georgia,serif;font-style:italic;color:var(--muted);line-height:1.5;margin:0 0 .4em}
-.ichthus{width:120px;height:auto;margin:0 auto;display:block}
-.ichthus path{fill:none;stroke:var(--accent);stroke-width:5}
-.ichthus line{stroke:var(--accent);stroke-width:5}
+.kerklogo{width:132px;height:auto;margin:0 auto;display:block}
+.kerklogo *{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.intro{text-align:center;max-width:46ch;margin:0 auto 18px;color:var(--muted)}
 .lesgrid{display:grid;gap:10px;margin:14px 0}
 .leskaart{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--ink)}
 .leskaart:hover{border-color:var(--accent-2)}

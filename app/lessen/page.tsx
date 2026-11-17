@@ -23,7 +23,7 @@ export default async function Lessen() {
   return (
     <div className="wrap">
       <header className="top">
-        <div><div className="kicker">Belijdeniscatechese</div><h1>Welkom, {c.naam}</h1></div>
+        <div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Welkom, {c.naam}</h1></div>
         <form action={uitloggen}><button className="klein" type="submit">Uitloggen</button></form>
       </header>
 

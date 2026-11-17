@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const dagTxt = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
 
 export default async function Beheer() {
-  if (!isBeheerder()) return <div className="wrap"><header className="top"><div><div className="kicker">Belijdeniscatechese</div><h1>Beheer</h1></div></header><BeheerLogin /></div>;
+  if (!isBeheerder()) return <div className="wrap"><header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Beheer</h1></div></header><BeheerLogin /></div>;
 
   const [cs, act, ant, her, ext] = await Promise.all([
     db().from("catechisanten").select("id,naam,code").order("naam"),
@@ -37,7 +37,7 @@ export default async function Beheer() {
 
   return (
     <div className="wrap breed">
-      <header className="top"><div><div className="kicker">Belijdeniscatechese</div><h1>Overzicht catechisanten</h1></div>
+      <header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Overzicht catechisanten</h1></div>
         <form action={beheerUit}><button className="klein" type="submit">Uitloggen</button></form></header>
 
       <div className="card">

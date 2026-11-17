@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Belijdeniscatechese",
+  title: "Belijdeniscatechese Bethlehemkerk",
   description: "Leer- en oefenomgeving bij de belijdeniscatechese",
   robots: { index: false, follow: false },
 };

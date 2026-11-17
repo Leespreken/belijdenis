@@ -20,7 +20,7 @@ export default async function Onthouden({ searchParams }: { searchParams: { alle
   const eerste = kaarten[0]?.les ?? 3;
   return (
     <div className="wrap">
-      <header className="top"><div><div className="kicker">Belijdeniscatechese</div><h1>Onthouden</h1><div className="bijbel">Een paar minuten per dag houdt het vast.</div></div>
+      <header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Onthouden</h1><div className="bijbel">Een paar minuten per dag houdt het vast.</div></div>
         <Link className="knop klein" href={`/les/${eerste}`}>← Terug</Link></header>
       <Herhaal kaarten={kaarten} leesLes={eerste} />
       {!searchParams.alles && <p className="note"><Link href="/onthouden?alles=1">Toch alles oefenen wat ik al gedaan heb</Link></p>}
