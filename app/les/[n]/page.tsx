@@ -27,9 +27,9 @@ export default async function LesPagina({ params }: { params: { n: string } }) {
     <div className="wrap">
       <header className="top">
         <div>
-          <div className="kicker">Belijdeniscatechese Bethlehemkerk · {les.optioneel ? "Optionele les" : `Les ${les.nr}`}</div>
+          <div className="kicker">Belijdeniscatechese · {les.optioneel ? "Optionele les" : `Les ${les.nr}`}</div>
           <h1>{les.titel}</h1>
-          <div className="bijbel">Bijbel: {les.bijbel}</div>
+          <div className="bijbel">{les.bijbel}</div>
           {les.overig && les.overig.length > 0 && <div className="overig">{les.overig.join(" · ")}</div>}
         </div>
         <form action={uitloggen}><button className="klein" type="submit">Uitloggen</button></form>
