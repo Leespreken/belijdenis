@@ -4,10 +4,11 @@ import type { Les } from "@/lib/content";
 import { kernpunten } from "@/lib/content";
 import { opslaan } from "@/lib/opslaan";
 import { useActief } from "./useActief";
+import Reproduceren from "./Reproduceren";
 
 export type Opgeslagen = { vraag: number; antwoord: string; zelf: number | null };
 export type ExtraItem = { id: string; titel: string; bron: string | null; tekst: string | null; link: string | null };
-type Tab = "lezen" | "vragen" | "extra";
+type Tab = "lezen" | "vragen" | "reproduceren" | "extra";
 
 function ActieveTab({ les, tab }: { les: number; tab: string }) {
   const fout = useActief(les, tab);
@@ -20,6 +21,10 @@ export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgesl
     Object.fromEntries(opgeslagen.map((o) => [o.vraag, { antwoord: o.antwoord, zelf: o.zelf }]))
   );
   const gedaan = les.vragen.filter((v) => klaar[v.id]).length;
+  const reproVragen = les.vragen.filter((v): v is typeof v & { reproductie: NonNullable<typeof v.reproductie> } => !!v.reproductie);
+  let volgNr = 3;
+  const reproNr = reproVragen.length > 0 ? volgNr++ : 0;
+  const extraNr = extra.length > 0 ? volgNr++ : 0;
 
   return (
     <>
@@ -27,7 +32,8 @@ export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgesl
       <nav className="tabs" role="tablist" aria-label="Onderdelen">
         <button role="tab" aria-selected={tab === "lezen"} onClick={() => setTab("lezen")}>1. De les</button>
         <button role="tab" aria-selected={tab === "vragen"} onClick={() => setTab("vragen")}>2. Vragen</button>
-        {extra.length > 0 && <button role="tab" aria-selected={tab === "extra"} onClick={() => setTab("extra")}>3. Extra</button>}
+        {reproVragen.length > 0 && <button role="tab" aria-selected={tab === "reproduceren"} onClick={() => setTab("reproduceren")}>{reproNr}. Reproduceren</button>}
+        {extra.length > 0 && <button role="tab" aria-selected={tab === "extra"} onClick={() => setTab("extra")}>{extraNr}. Extra</button>}
       </nav>
 
       {tab === "lezen" && (
@@ -52,6 +58,12 @@ export default function LesClient({ les, opgeslagen, extra }: { les: Les; opgesl
               onZelf={(z) => setKlaar((k) => ({ ...k, [v.id]: { ...k[v.id], zelf: z } }))}
               onOpnieuw={() => setKlaar((k) => { const n = { ...k }; delete n[v.id]; return n; })} />
           ))}
+        </section>
+      )}
+
+      {tab === "reproduceren" && (
+        <section>
+          <Reproduceren lesNr={les.nr} vragen={reproVragen.map((v) => ({ id: v.id, tekst: v.tekst, goed: v.reproductie.goed, fout: v.reproductie.fout }))} />
         </section>
       )}
 
