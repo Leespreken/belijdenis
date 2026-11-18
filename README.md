@@ -53,3 +53,22 @@ die komt dan in Supabase Storage terecht (bucket `bijlagen`, openbaar leesbaar v
 bestandsnaam) en verschijnt bij de les als "📎 Bijlage openen". Je kunt in plaats daarvan ook een
 link naar een al online staand artikel of PDF invullen. Eenmalig nodig: voer de bijgewerkte
 `supabase/schema.sql` opnieuw uit (maakt de opslagbucket aan).
+
+## Zelf inschrijven, huiswerk en berichten
+Catechisanten kunnen zich nu ook zelf inschrijven via `/inschrijven` (naam, e-mail, telefoonnummer);
+ze krijgen daarna automatisch een code, net als wanneer jij ze handmatig toevoegt op `/beheer`.
+
+Op `/beheer` kun je:
+- **Huiswerk geven**: per les aanvinken wat je opgeeft — lezen van de les, het maken van specifieke
+  vragen, en/of het leren van specifieke vragen (die laatste komen er dan direct bij in "Onthouden").
+  Dit geldt voor alle catechisanten of voor één persoon. De catechisant ziet dit huiswerk met
+  voortgang bovenaan `/lessen`.
+- **Een bericht sturen**: een los berichtje of artikeltje naar iemand sturen, per **e-mail**
+  (automatisch, via de dienst Resend) of door een kant-en-klaar **WhatsApp**-bericht te openen
+  (jij verstuurt het zelf met één klik — er is geen WhatsApp-koppeling nodig).
+
+**Eenmalig nodig voor e-mail:** maak een gratis account op [resend.com](https://resend.com), maak
+daar een API-sleutel aan, en zet die in Vercel (Project → Settings → Environment Variables) als
+`RESEND_API_KEY`. Optioneel: `RESEND_FROM` (bijv. `"Belijdeniscatechese <noreply@jouwdomein.nl>"`
+nadat je dat domein bij Resend hebt geverifieerd — zonder eigen domein wordt een Resend-testadres
+gebruikt, wat prima werkt maar er minder persoonlijk uitziet).

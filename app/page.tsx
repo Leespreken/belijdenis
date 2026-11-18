@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { huidige } from "@/lib/auth";
 import InlogForm from "@/components/InlogForm";
 
@@ -17,6 +18,7 @@ export default async function Home() {
       </div>
       <p className="intro">Hier leer je de stof van de catechese en oefen je de vragen. Neem er rustig de tijd voor.</p>
       <InlogForm />
+      <p className="note" style={{ textAlign: "center" }}>Nog geen code? <Link href="/inschrijven">Schrijf je hier in</Link>.</p>
     </div>
   );
 }

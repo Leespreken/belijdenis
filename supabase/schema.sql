@@ -4,8 +4,12 @@ create table if not exists catechisanten (
   id uuid primary key default gen_random_uuid(),
   naam text not null,
   code text not null unique,
+  email text,
+  telefoon text,
   aangemaakt timestamptz not null default now()
 );
+alter table catechisanten add column if not exists email text;
+alter table catechisanten add column if not exists telefoon text;
 
 create table if not exists antwoorden (
   catechisant_id uuid not null references catechisanten(id) on delete cascade,
@@ -89,6 +93,18 @@ alter table vraaginhoud add column if not exists open boolean not null default f
 alter table vraaginhoud add column if not exists actief boolean not null default true;
 alter table vraaginhoud add column if not exists volgorde int;
 alter table vraaginhoud add column if not exists toegevoegd boolean not null default false;
+
+create table if not exists huiswerk (
+  id uuid primary key default gen_random_uuid(),
+  catechisant_id uuid not null references catechisanten(id) on delete cascade,
+  les int not null,
+  lezen boolean not null default false,
+  vragen int[] not null default '{}',
+  leren int[] not null default '{}',
+  bericht text,
+  aangemaakt timestamptz not null default now()
+);
+alter table huiswerk enable row level security;
 
 -- Opslag voor geüploade bijlagen (bijv. PDF's bij "Extra materiaal").
 insert into storage.buckets (id, name, public)

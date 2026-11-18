@@ -4,10 +4,13 @@ import { isBeheerder } from "@/lib/auth";
 import { LESSEN } from "@/lib/content";
 import { totaalInzet, min, AntwoordRij } from "@/lib/inzet";
 import BeheerLogin from "@/components/BeheerLogin";
-import { beheerUit, nieuweCatechisant, nieuweExtra, verwijderExtra } from "@/app/actions";
+import { beheerUit, nieuweCatechisant, nieuweExtra, verwijderExtra, verwijderHuiswerk } from "@/app/actions";
 import { haalAlleVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 import { haalAlleLesinhoud, metLesinhoud } from "@/lib/lesinhoud";
 import { verwachteLeestijd, leesStatus } from "@/lib/leesinzet";
+import { haalAlleHuiswerk } from "@/lib/huiswerk";
+import HuiswerkForm from "@/components/HuiswerkForm";
+import BerichtForm from "@/components/BerichtForm";
 
 export const dynamic = "force-dynamic";
 const dagTxt = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
@@ -15,14 +18,15 @@ const dagTxt = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("nl-
 export default async function Beheer() {
   if (!isBeheerder()) return <div className="wrap"><header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Beheer</h1></div></header><BeheerLogin /></div>;
 
-  const [cs, act, ant, her, ext, overridesPerLes, lesinhoudPerLes] = await Promise.all([
-    db().from("catechisanten").select("id,naam,code").order("naam"),
+  const [cs, act, ant, her, ext, overridesPerLes, lesinhoudPerLes, huiswerkPerCat] = await Promise.all([
+    db().from("catechisanten").select("id,naam,code,email,telefoon").order("naam"),
     db().from("activiteit").select("catechisant_id,les,dag,tab,secs"),
     db().from("antwoorden").select("*"),
     db().from("herhaling").select("catechisant_id,goed,fout"),
     db().from("extra").select("id,les,titel,bron").order("les").order("aangemaakt"),
     haalAlleVraaginhoud(),
     haalAlleLesinhoud(),
+    haalAlleHuiswerk(),
   ]);
   const lessen = Object.values(LESSEN)
     .map((l) => metVraaginhoud(l, overridesPerLes.get(l.nr) ?? new Map()))
@@ -33,6 +37,11 @@ export default async function Beheer() {
   const verwachtPerLes = new Map(
     Object.values(LESSEN).map((l) => [l.nr, verwachteLeestijd(metLesinhoud(l, lesinhoudPerLes.get(l.nr)).html)])
   );
+  const huiswerkLessen = lessen.map((l) => ({
+    nr: l.nr, titel: l.titel, optioneel: l.optioneel,
+    vragen: l.vragen.map((v) => ({ id: v.id, tekst: v.tekst })),
+    leerbaar: l.vragen.filter((v) => v.invul).map((v) => ({ id: v.id, tekst: v.tekst })),
+  }));
 
   const rijen = (cs.data ?? []).map((c) => {
     const a = (act.data ?? []).filter((x) => x.catechisant_id === c.id);
@@ -72,12 +81,17 @@ export default async function Beheer() {
       <div className="card">
         <div className="tablewrap">
           <table>
-            <thead><tr><th>Naam</th><th>Code</th><th>Totaal bezig</th><th>Waarvan vragen</th><th>Laatst actief</th><th>Lezen</th><th>Vragen gedaan</th><th>Zelf getypt</th><th>Geplakt</th><th>Herhaald (goed/fout)</th><th>Inzet</th></tr></thead>
+            <thead><tr><th>Naam</th><th>Code</th><th>Contact</th><th>Totaal bezig</th><th>Waarvan vragen</th><th>Laatst actief</th><th>Lezen</th><th>Vragen gedaan</th><th>Zelf getypt</th><th>Geplakt</th><th>Herhaald (goed/fout)</th><th>Inzet</th></tr></thead>
             <tbody>
               {rijen.map((r) => (
                 <tr key={r.c.id}>
                   <td><Link href={`/beheer/${r.c.id}`}>{r.c.naam}</Link></td>
                   <td><code>{r.c.code}</code></td>
+                  <td>
+                    {r.c.email && <a href={`mailto:${r.c.email}`} title={r.c.email}>✉️</a>}
+                    {r.c.telefoon && <> <a href={`https://wa.me/${r.c.telefoon.replace(/[^\d]/g, "")}`} target="_blank" rel="noopener noreferrer" title={r.c.telefoon}>💬</a></>}
+                    {!r.c.email && !r.c.telefoon && "–"}
+                  </td>
                   <td>{min(r.totaal)}</td><td>{min(r.vragenSecs)}</td>
                   <td>{r.laatst ? dagTxt(r.laatst) : "–"}</td>
                   <td><span className={"badge " + r.lezen.kleur}>{r.lezen.tekst}</span></td>
@@ -96,8 +110,37 @@ export default async function Beheer() {
       </div>
 
       <div className="grid2">
+        <HuiswerkForm lessen={huiswerkLessen} catechisanten={(cs.data ?? []).map((c) => ({ id: c.id, naam: c.naam }))} />
+        <BerichtForm catechisanten={(cs.data ?? []).map((c) => ({ id: c.id, naam: c.naam, email: c.email, telefoon: c.telefoon }))} />
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Toegekend huiswerk</h3>
+        {[...huiswerkPerCat.entries()].every(([, lijst]) => lijst.length === 0) && <p className="note">Nog geen huiswerk gegeven.</p>}
+        {(cs.data ?? []).map((c) => {
+          const lijst = huiswerkPerCat.get(c.id) ?? [];
+          if (!lijst.length) return null;
+          return (
+            <div key={c.id} style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 600 }}>{c.naam}</div>
+              {lijst.map((h) => (
+                <form key={h.id} action={verwijderHuiswerk} className="row" style={{ justifyContent: "space-between" }}>
+                  <span className="note">
+                    Les {h.les}{h.lezen ? " · lezen" : ""}{h.vragen.length ? ` · maken: vraag ${h.vragen.join(", ")}` : ""}{h.leren.length ? ` · leren: vraag ${h.leren.join(", ")}` : ""}
+                  </span>
+                  <input type="hidden" name="id" value={h.id} />
+                  <button className="klein gevaar" type="submit">Verwijderen</button>
+                </form>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid2">
         <form action={nieuweCatechisant} className="card">
           <h3 style={{ marginTop: 0 }}>Catechisanten toevoegen</h3>
+          <p className="note">Catechisanten kunnen zich ook zelf inschrijven via <code>/inschrijven</code> (met naam, e-mail en telefoonnummer).</p>
           <label htmlFor="namen">Voornaam (een per regel)</label>
           <textarea id="namen" name="namen" placeholder={"Anne\nJan\nMarieke"} />
           <div className="row"><button className="primary" type="submit">Toevoegen en codes maken</button></div>
