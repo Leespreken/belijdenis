@@ -5,6 +5,7 @@ import { isBeheerder } from "@/lib/auth";
 import { LESSEN } from "@/lib/content";
 import { eenInzet, min } from "@/lib/inzet";
 import { verwijderCatechisant } from "@/app/actions";
+import { haalAlleVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 
 export const dynamic = "force-dynamic";
 const zl = ["Moet ik oefenen", "Gedeeltelijk", "Wist ik"];
@@ -13,10 +14,14 @@ export default async function Detail({ params }: { params: { id: string } }) {
   if (!isBeheerder()) redirect("/beheer");
   const { data: c } = await db().from("catechisanten").select("id,naam,code").eq("id", params.id).maybeSingle();
   if (!c) notFound();
-  const [act, ant] = await Promise.all([
+  const [act, ant, overridesPerLes] = await Promise.all([
     db().from("activiteit").select("les,dag,tab,secs").eq("catechisant_id", c.id).order("dag", { ascending: false }),
     db().from("antwoorden").select("*").eq("catechisant_id", c.id).order("les").order("vraag"),
+    haalAlleVraaginhoud(),
   ]);
+  const lessenMap = new Map(
+    Object.values(LESSEN).map((l) => [l.nr, metVraaginhoud(l, overridesPerLes.get(l.nr) ?? new Map())])
+  );
   const perDag = new Map<string, Record<string, number>>();
   (act.data ?? []).forEach((a) => { const m = perDag.get(a.dag) ?? {}; m[a.tab] = (m[a.tab] ?? 0) + a.secs; perDag.set(a.dag, m); });
 
@@ -39,7 +44,7 @@ export default async function Detail({ params }: { params: { id: string } }) {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Antwoorden</h3>
         {(ant.data ?? []).map((a) => {
-          const v = LESSEN[a.les]?.vragen.find((x) => x.id === a.vraag); if (!v) return null;
+          const v = lessenMap.get(a.les)?.vragen.find((x) => x.id === a.vraag); if (!v) return null;
           const e = eenInzet(a, !!v.open);
           return (
             <div key={a.les + "-" + a.vraag}>

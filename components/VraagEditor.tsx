@@ -3,15 +3,20 @@ import { useState } from "react";
 import { kernNaarTekst } from "@/lib/vraaginhoud";
 import type { Vraag } from "@/lib/content";
 
-export default function VraagEditor({ lesNr, vraag }: { lesNr: number; vraag: Vraag }) {
+export default function VraagEditor({ lesNr, vraag, actief: initieelActief, volgorde: initieelVolgorde, nieuw }: {
+  lesNr: number; vraag: Vraag; actief: boolean; volgorde: number; nieuw?: boolean;
+}) {
   const [tekst, setTekst] = useState(vraag.tekst);
   const [antwoord, setAntwoord] = useState(vraag.antwoord);
+  const [open, setOpen] = useState(!!vraag.open);
   const [kernTekst, setKernTekst] = useState(kernNaarTekst(vraag.kern));
   const [need, setNeed] = useState(vraag.need);
   const [invul, setInvul] = useState(vraag.invul ?? "");
   const [reproductieGoed, setReproductieGoed] = useState(vraag.reproductie?.goed ?? "");
   const [reproductieFout1, setReproductieFout1] = useState(vraag.reproductie?.fout[0] ?? "");
   const [reproductieFout2, setReproductieFout2] = useState(vraag.reproductie?.fout[1] ?? "");
+  const [actief, setActief] = useState(initieelActief);
+  const [volgorde, setVolgorde] = useState(String(initieelVolgorde));
   const [bezig, setBezig] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -21,7 +26,11 @@ export default function VraagEditor({ lesNr, vraag }: { lesNr: number; vraag: Vr
       const res = await fetch("/api/beheer/vraaginhoud", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ les: lesNr, vraag: vraag.id, tekst, antwoord, kernTekst, need, invul, reproductieGoed, reproductieFout1, reproductieFout2 }),
+        body: JSON.stringify({
+          les: lesNr, vraag: vraag.id, tekst, antwoord, open, kernTekst, need, invul,
+          reproductieGoed, reproductieFout1, reproductieFout2, actief,
+          volgorde: volgorde.trim() === "" ? null : Number(volgorde),
+        }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || data?.ok !== true) throw new Error(data?.fout || "mislukt");
@@ -32,16 +41,34 @@ export default function VraagEditor({ lesNr, vraag }: { lesNr: number; vraag: Vr
   }
 
   return (
-    <details className="more">
-      <summary>Vraag {vraag.id}{vraag.open ? " (om over na te denken)" : ""}: {vraag.tekst.slice(0, 80)}{vraag.tekst.length > 80 ? "…" : ""}</summary>
+    <details className="more" open={nieuw || undefined} style={!actief ? { opacity: 0.6 } : undefined}>
+      <summary>
+        Vraag {vraag.id}{!actief ? " (uitgeschakeld)" : ""}{open ? " (om over na te denken)" : ""}: {tekst.slice(0, 80)}{tekst.length > 80 ? "…" : ""}
+      </summary>
       <div style={{ paddingBottom: 10 }}>
-        <label htmlFor={`tekst-${vraag.id}`}>Vraagtekst</label>
+        <div className="row" style={{ marginTop: 6 }}>
+          <label style={{ marginBottom: 0 }}>
+            <input type="checkbox" checked={actief} onChange={(e) => setActief(e.target.checked)} style={{ width: "auto", marginRight: 8 }} />
+            Actief (staat bij de catechisant)
+          </label>
+        </div>
+        <label htmlFor={`volgorde-${vraag.id}`} style={{ marginTop: 10 }}>Volgorde (lager getal = eerder in de lijst; het vraagnummer zelf blijft {vraag.id})</label>
+        <input id={`volgorde-${vraag.id}`} type="text" inputMode="numeric" value={volgorde} onChange={(e) => setVolgorde(e.target.value.replace(/[^\d-]/g, ""))} style={{ maxWidth: 100 }} />
+
+        <label htmlFor={`tekst-${vraag.id}`} style={{ marginTop: 10 }}>Vraagtekst</label>
         <textarea id={`tekst-${vraag.id}`} value={tekst} onChange={(e) => setTekst(e.target.value)} style={{ minHeight: 60 }} />
 
         <label htmlFor={`antwoord-${vraag.id}`} style={{ marginTop: 10 }}>Modelantwoord (uit de les)</label>
         <textarea id={`antwoord-${vraag.id}`} value={antwoord} onChange={(e) => setAntwoord(e.target.value)} />
 
-        {!vraag.open && (
+        <div className="row" style={{ marginTop: 10 }}>
+          <label style={{ marginBottom: 0 }}>
+            <input type="checkbox" checked={open} onChange={(e) => setOpen(e.target.checked)} style={{ width: "auto", marginRight: 8 }} />
+            Open na-denk-vraag (geen kernpunten/oefeningen, telt niet mee in de voortgang)
+          </label>
+        </div>
+
+        {!open && (
           <>
             <label htmlFor={`kern-${vraag.id}`} style={{ marginTop: 10 }}>Kernpunten (één per regel: <code>Label | synoniem1, synoniem2</code>)</label>
             <textarea id={`kern-${vraag.id}`} value={kernTekst} onChange={(e) => setKernTekst(e.target.value)} placeholder={"Kerkelijk gezag | kerkelijk\nOnder Gods Woord | onder"} />

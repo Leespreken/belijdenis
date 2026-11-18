@@ -28,10 +28,21 @@ Extra materiaal (krantenartikel e.d.) voeg je zonder code toe op `/beheer`.
 ## Lesteksten en vragen bewerken zonder code (`/beheer/lessen`)
 De lestekst én de vragen (vraagtekst, modelantwoord, kernpunten, invuloefening, meerkeuze-opties) zijn
 vanaf nu bewerkbaar in de browser, zonder dat daar een nieuwe versie van de site voor nodig is.
-Eenmalig nodig: voer de bijgewerkte `supabase/schema.sql` opnieuw uit in de Supabase *SQL Editor* (dit
-voegt alleen de nieuwe tabellen `lesinhoud` en `vraaginhoud` toe; bestaande tabellen blijven ongemoeid).
+Eenmalig nodig: voer de bijgewerkte `supabase/schema.sql` opnieuw uit in de Supabase *SQL Editor*
+(dit voegt alleen nieuwe tabellen/kolommen toe; bestaande gegevens blijven ongemoeid).
 Ga daarna naar `/beheer/lessen`, klik op **"Vul ontbrekende lesteksten"** om de huidige teksten als
 startpunt in de database te zetten, open een les om de lestekst te bewerken (eenvoudige
 tekstverwerker/WYSIWYG), en klik op **"Vragen bewerken"** om per vraag alle onderdelen aan te passen.
-Nieuwe vragen toevoegen of verwijderen, of de volgorde/het aantal lessen wijzigen, kan nog niet via het
-scherm — dat raakt de nummering en de al opgeslagen antwoorden van catechisanten, en is een latere stap.
+
+Bij elke vraag kun je ook:
+- **Actief/inactief zetten** — een uitgeschakelde vraag blijft bestaan met hetzelfde nummer en de al
+  opgeslagen antwoorden blijven intact, maar de vraag verschijnt niet meer bij de catechisant. Zo kun je
+  bijvoorbeeld alleen de vragen 1, 4, 5 en 8 laten staan zonder de nummering aan te passen.
+- **Volgorde wijzigen** — een los getal (lager = eerder in de lijst) dat onafhankelijk is van het
+  vraagnummer.
+- **"+ Nieuwe vraag toevoegen"** (onderaan de vragenlijst van een les) maakt een vraag aan met een vers
+  nummer, die je direct kunt invullen.
+
+Echt verwijderen van een vraag kan nog niet via het scherm (dat zou de al opgeslagen antwoorden van
+catechisanten kunnen wezen); gebruik in plaats daarvan de aan/uit-schakelaar. De lestitel, Bijbelverwijzing
+en overige verwijzingen (HC/NGB/DL/KB) zijn nog niet via het scherm te wijzigen.

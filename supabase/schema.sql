@@ -75,9 +75,20 @@ create table if not exists vraaginhoud (
   reproductie_goed text,
   reproductie_fout1 text,
   reproductie_fout2 text,
+  open boolean not null default false,
+  actief boolean not null default true,
+  volgorde int,
+  toegevoegd boolean not null default false,
   bijgewerkt timestamptz not null default now(),
   primary key (les, vraag)
 );
+
+-- Bestond de tabel al? Dan deze regels los uitvoeren (hierboven staan ze ook,
+-- maar "create table if not exists" voegt geen kolommen toe aan een tabel die er al is):
+alter table vraaginhoud add column if not exists open boolean not null default false;
+alter table vraaginhoud add column if not exists actief boolean not null default true;
+alter table vraaginhoud add column if not exists volgorde int;
+alter table vraaginhoud add column if not exists toegevoegd boolean not null default false;
 
 create or replace function tel_op(p_cat uuid, p_les int, p_tab text, p_secs int)
 returns void language sql as $$

@@ -3,14 +3,17 @@ import { huidige } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LESSEN, kernpunten } from "@/lib/content";
 import { plusDagen, vandaag, INTERVALLEN } from "@/lib/datum";
+import { haalVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 
 export async function POST(req: NextRequest) {
   const c = await huidige();
   if (!c) return NextResponse.json({ ok: false }, { status: 401 });
   const b = await req.json().catch(() => null);
-  const les = b ? LESSEN[b.les as number] : undefined;
-  const v = les?.vragen.find((x) => x.id === b?.vraag);
-  if (!les || !v) return NextResponse.json({ ok: false }, { status: 400 });
+  const basisLes = b ? LESSEN[b.les as number] : undefined;
+  if (!basisLes) return NextResponse.json({ ok: false }, { status: 400 });
+  const les = metVraaginhoud(basisLes, await haalVraaginhoud(basisLes.nr));
+  const v = les.vragen.find((x) => x.id === b?.vraag);
+  if (!v) return NextResponse.json({ ok: false }, { status: 400 });
 
   if (b.actie === "zelf") {
     const z = [0, 1, 2].includes(b.zelf) ? b.zelf : null;

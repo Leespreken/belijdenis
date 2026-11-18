@@ -5,17 +5,21 @@ import { db } from "@/lib/db";
 import { LESSEN, telbareVragen } from "@/lib/content";
 import { uitloggen } from "@/app/actions";
 import { vandaag } from "@/lib/datum";
+import { haalAlleVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 
 export const dynamic = "force-dynamic";
 export default async function Lessen() {
   const c = await huidige();
   if (!c) redirect("/");
 
-  const lessen = Object.values(LESSEN).sort((a, b) => a.nr - b.nr);
-  const [a, h] = await Promise.all([
+  const [a, h, overridesPerLes] = await Promise.all([
     db().from("antwoorden").select("les,vraag").eq("catechisant_id", c.id),
     db().from("herhaling").select("vraag").eq("catechisant_id", c.id).lte("volgende", vandaag()),
+    haalAlleVraaginhoud(),
   ]);
+  const lessen = Object.values(LESSEN)
+    .map((l) => metVraaginhoud(l, overridesPerLes.get(l.nr) ?? new Map()))
+    .sort((a, b) => a.nr - b.nr);
   const openVragen = new Map<number, Set<number>>();
   lessen.forEach((l) => openVragen.set(l.nr, new Set(l.vragen.filter((v) => v.open).map((v) => v.id))));
   const gedaanPerLes = new Map<number, number>();

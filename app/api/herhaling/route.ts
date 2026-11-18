@@ -3,12 +3,16 @@ import { huidige } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LESSEN } from "@/lib/content";
 import { plusDagen, vandaag, INTERVALLEN } from "@/lib/datum";
+import { haalVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 
 export async function POST(req: NextRequest) {
   const c = await huidige();
   if (!c) return NextResponse.json({ ok: false }, { status: 401 });
   const b = await req.json().catch(() => null);
-  if (!b || !LESSEN[b.les as number]?.vragen.some((v) => v.id === b.vraag)) return NextResponse.json({ ok: false }, { status: 400 });
+  const basisLes = b ? LESSEN[b.les as number] : undefined;
+  if (!basisLes) return NextResponse.json({ ok: false }, { status: 400 });
+  const les = metVraaginhoud(basisLes, await haalVraaginhoud(basisLes.nr));
+  if (!les.vragen.some((v) => v.id === b.vraag)) return NextResponse.json({ ok: false }, { status: 400 });
   const key = { catechisant_id: c.id, les: b.les, vraag: b.vraag };
   const { data: h, error: leesFout } = await db().from("herhaling").select("box,goed,fout").match(key).maybeSingle();
   if (leesFout) return NextResponse.json({ ok: false }, { status: 500 });

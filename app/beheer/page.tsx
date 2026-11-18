@@ -5,6 +5,7 @@ import { LESSEN } from "@/lib/content";
 import { totaalInzet, min, AntwoordRij } from "@/lib/inzet";
 import BeheerLogin from "@/components/BeheerLogin";
 import { beheerUit, nieuweCatechisant, nieuweExtra, verwijderExtra } from "@/app/actions";
+import { haalAlleVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 
 export const dynamic = "force-dynamic";
 const dagTxt = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
@@ -12,15 +13,19 @@ const dagTxt = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("nl-
 export default async function Beheer() {
   if (!isBeheerder()) return <div className="wrap"><header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Beheer</h1></div></header><BeheerLogin /></div>;
 
-  const [cs, act, ant, her, ext] = await Promise.all([
+  const [cs, act, ant, her, ext, overridesPerLes] = await Promise.all([
     db().from("catechisanten").select("id,naam,code").order("naam"),
     db().from("activiteit").select("catechisant_id,les,dag,tab,secs"),
     db().from("antwoorden").select("*"),
     db().from("herhaling").select("catechisant_id,goed,fout"),
     db().from("extra").select("id,les,titel,bron").order("les").order("aangemaakt"),
+    haalAlleVraaginhoud(),
   ]);
-  const lessen = Object.values(LESSEN).sort((a, b) => a.nr - b.nr);
-  const openVraag = (les: number, v: number) => !!LESSEN[les]?.vragen.find((x) => x.id === v)?.open;
+  const lessen = Object.values(LESSEN)
+    .map((l) => metVraaginhoud(l, overridesPerLes.get(l.nr) ?? new Map()))
+    .sort((a, b) => a.nr - b.nr);
+  const lessenMap = new Map(lessen.map((l) => [l.nr, l]));
+  const openVraag = (les: number, v: number) => !!lessenMap.get(les)?.vragen.find((x) => x.id === v)?.open;
   const aantalVragen = lessen.reduce((s, l) => s + l.vragen.length, 0);
 
   const rijen = (cs.data ?? []).map((c) => {
