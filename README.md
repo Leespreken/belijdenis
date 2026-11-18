@@ -25,11 +25,13 @@ De catechisanten hebben alleen een code. De database is alleen bereikbaar via de
 Een les staat in `lib/content.ts` (tekst, vragen, kernpunten, invuloefening, meerkeuze-opties).
 Extra materiaal (krantenartikel e.d.) voeg je zonder code toe op `/beheer`.
 
-## Lesteksten bewerken zonder code (`/beheer/lessen`)
-De lestekst (niet de vragen) kan vanaf nu direct in de browser bewerkt worden, met een eenvoudige
-tekstverwerker (WYSIWYG). Eenmalig nodig: voer de bijgewerkte `supabase/schema.sql` opnieuw uit in de
-Supabase *SQL Editor* (dit voegt alleen de nieuwe tabel `lesinhoud` toe; bestaande tabellen blijven
-ongemoeid). Ga daarna naar `/beheer/lessen`, klik op **"Vul ontbrekende lesteksten"** om de huidige
-teksten als startpunt in de database te zetten, en bewerk daarna per les.
-Vragen, kernpunten, invuloefeningen en meerkeuze-opties staan nog in `lib/content.ts` en zijn nog niet
-via het scherm te bewerken; dat is een volgende stap.
+## Lesteksten en vragen bewerken zonder code (`/beheer/lessen`)
+De lestekst én de vragen (vraagtekst, modelantwoord, kernpunten, invuloefening, meerkeuze-opties) zijn
+vanaf nu bewerkbaar in de browser, zonder dat daar een nieuwe versie van de site voor nodig is.
+Eenmalig nodig: voer de bijgewerkte `supabase/schema.sql` opnieuw uit in de Supabase *SQL Editor* (dit
+voegt alleen de nieuwe tabellen `lesinhoud` en `vraaginhoud` toe; bestaande tabellen blijven ongemoeid).
+Ga daarna naar `/beheer/lessen`, klik op **"Vul ontbrekende lesteksten"** om de huidige teksten als
+startpunt in de database te zetten, open een les om de lestekst te bewerken (eenvoudige
+tekstverwerker/WYSIWYG), en klik op **"Vragen bewerken"** om per vraag alle onderdelen aan te passen.
+Nieuwe vragen toevoegen of verwijderen, of de volgorde/het aantal lessen wijzigen, kan nog niet via het
+scherm — dat raakt de nummering en de al opgeslagen antwoorden van catechisanten, en is een latere stap.

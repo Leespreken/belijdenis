@@ -20,9 +20,12 @@ export default async function LesBewerken({ params }: { params: { nr: string } }
           <div className="kicker">Belijdeniscatechese · Beheer</div>
           <h1>{les.optioneel ? "Optionele les" : `Les ${les.nr}`}: {les.titel}</h1>
         </div>
-        <Link className="knop klein" href="/beheer/lessen">← Alle lessen</Link>
+        <div className="row" style={{ marginTop: 0 }}>
+          <Link className="knop klein" href={`/beheer/lessen/${les.nr}/vragen`}>Vragen bewerken →</Link>
+          <Link className="knop klein" href="/beheer/lessen">← Alle lessen</Link>
+        </div>
       </header>
-      <p className="note">Wijzigingen zijn direct zichtbaar voor catechisanten zodra je op Opslaan klikt. Vragen, kernpunten en de meerkeuze-oefening zijn hier nog niet te bewerken.</p>
+      <p className="note">Wijzigingen zijn direct zichtbaar voor catechisanten zodra je op Opslaan klikt.</p>
       <LesEditor lesNr={les.nr} initieleHtml={les.html} initieleBijlezenTitel={les.bijlezenTitel ?? ""} initieleBijlezenHtml={les.bijlezenHtml ?? ""} />
     </div>
   );

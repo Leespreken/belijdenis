@@ -3,6 +3,7 @@ import { huidige } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LESSEN } from "@/lib/content";
 import { haalLesinhoud, metLesinhoud } from "@/lib/lesinhoud";
+import { haalVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
 import LesClient from "@/components/LesClient";
 import { uitloggen } from "@/app/actions";
 import Link from "next/link";
@@ -14,13 +15,14 @@ export default async function LesPagina({ params }: { params: { n: string } }) {
   if (!c) redirect("/");
   const basisLes = LESSEN[Number(params.n)];
   if (!basisLes) notFound();
-  const [a, e, h, inhoud] = await Promise.all([
+  const [a, e, h, inhoud, vraagOverrides] = await Promise.all([
     db().from("antwoorden").select("vraag,antwoord,zelf").match({ catechisant_id: c.id, les: basisLes.nr }),
     db().from("extra").select("id,titel,bron,tekst,link").eq("les", basisLes.nr).order("volgorde").order("aangemaakt"),
     db().from("herhaling").select("vraag").match({ catechisant_id: c.id }).lte("volgende", vandaag()),
     haalLesinhoud(basisLes.nr),
+    haalVraaginhoud(basisLes.nr),
   ]);
-  const les = metLesinhoud(basisLes, inhoud);
+  const les = metVraaginhoud(metLesinhoud(basisLes, inhoud), vraagOverrides);
   const teHerhalen = h.data?.length ?? 0;
   const volgorde = Object.values(LESSEN).sort((x, y) => x.nr - y.nr);
   const idx = volgorde.findIndex((x) => x.nr === les.nr);
