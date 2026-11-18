@@ -6,6 +6,8 @@ import { LESSEN } from "@/lib/content";
 import { eenInzet, min } from "@/lib/inzet";
 import { verwijderCatechisant } from "@/app/actions";
 import { haalAlleVraaginhoud, metVraaginhoud } from "@/lib/vraaginhoud";
+import { haalAlleLesinhoud, metLesinhoud } from "@/lib/lesinhoud";
+import { verwachteLeestijd, leesStatus } from "@/lib/leesinzet";
 
 export const dynamic = "force-dynamic";
 const zl = ["Moet ik oefenen", "Gedeeltelijk", "Wist ik"];
@@ -14,16 +16,29 @@ export default async function Detail({ params }: { params: { id: string } }) {
   if (!isBeheerder()) redirect("/beheer");
   const { data: c } = await db().from("catechisanten").select("id,naam,code").eq("id", params.id).maybeSingle();
   if (!c) notFound();
-  const [act, ant, overridesPerLes] = await Promise.all([
+  const [act, ant, overridesPerLes, lesinhoudPerLes] = await Promise.all([
     db().from("activiteit").select("les,dag,tab,secs").eq("catechisant_id", c.id).order("dag", { ascending: false }),
     db().from("antwoorden").select("*").eq("catechisant_id", c.id).order("les").order("vraag"),
     haalAlleVraaginhoud(),
+    haalAlleLesinhoud(),
   ]);
   const lessenMap = new Map(
     Object.values(LESSEN).map((l) => [l.nr, metVraaginhoud(l, overridesPerLes.get(l.nr) ?? new Map())])
   );
   const perDag = new Map<string, Record<string, number>>();
   (act.data ?? []).forEach((a) => { const m = perDag.get(a.dag) ?? {}; m[a.tab] = (m[a.tab] ?? 0) + a.secs; perDag.set(a.dag, m); });
+
+  const lezenSecsPerLes = new Map<number, number>();
+  (act.data ?? []).forEach((a) => { if (a.tab === "lezen") lezenSecsPerLes.set(a.les, (lezenSecsPerLes.get(a.les) ?? 0) + a.secs); });
+  const lesNrsMetActiviteit = new Set<number>([...lezenSecsPerLes.keys(), ...(ant.data ?? []).map((a) => a.les)]);
+  const leesRijen = [...lesNrsMetActiviteit].sort((a, b) => a - b).flatMap((nr) => {
+    const basis = LESSEN[nr];
+    if (!basis) return [];
+    const html = metLesinhoud(basis, lesinhoudPerLes.get(nr)).html;
+    const verwacht = verwachteLeestijd(html);
+    const secs = lezenSecsPerLes.get(nr) ?? 0;
+    return [{ nr, titel: basis.titel, secs, verwacht, status: leesStatus(secs, verwacht) }];
+  });
 
   return (
     <div className="wrap">
@@ -39,6 +54,24 @@ export default async function Detail({ params }: { params: { id: string } }) {
           ))}</tbody>
         </table></div>
         {!perDag.size && <p className="note">Nog niet actief geweest.</p>}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Heeft de les echt gelezen?</h3>
+        <div className="tablewrap"><table>
+          <thead><tr><th>Les</th><th>Tijd op het leesscherm</th><th>Geschatte leestijd</th><th>Indicatie</th></tr></thead>
+          <tbody>{leesRijen.map((r) => (
+            <tr key={r.nr}><td>Les {r.nr}: {r.titel}</td><td>{min(r.secs)}</td><td>~{min(r.verwacht)}</td>
+              <td><span className={"badge " + r.status.kleur}>{r.status.tekst}</span></td></tr>
+          ))}</tbody>
+        </table></div>
+        {!leesRijen.length && <p className="note">Nog geen les geopend.</p>}
+        <p className="note">
+          Dit is een indicatie, geen oordeel: de tijd wordt alleen geteld zolang de pagina open en zichtbaar is
+          en er iets gebeurt (scrollen, typen, klikken). De geschatte leestijd is op het aantal woorden in de
+          les gebaseerd (een rustig leestempo). Kort op het scherm kan ook betekenen dat iemand de les al kende
+          of er al eerder naar gekeken had.
+        </p>
       </div>
 
       <div className="card">

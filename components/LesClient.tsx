@@ -78,7 +78,13 @@ export default function LesClient({ les, opgeslagen, extra, vorige, volgende }: 
               <h2 style={{ marginTop: 0 }}>{x.titel}</h2>
               {x.bron && <p className="note">{x.bron}</p>}
               {(x.tekst || "").split(/\n\s*\n/).filter((t) => t.trim()).map((t, i) => <p key={i}>{t.trim()}</p>)}
-              {x.link && <p><a href={x.link} target="_blank" rel="noopener noreferrer">Lees het volledige artikel</a></p>}
+              {x.link && (
+                <p>
+                  <a href={x.link} target="_blank" rel="noopener noreferrer">
+                    {/\.pdf($|[?#])/i.test(x.link) ? "📎 Bijlage openen (PDF)" : "📎 Bijlage openen"}
+                  </a>
+                </p>
+              )}
             </div>
           ))}
         </section>
