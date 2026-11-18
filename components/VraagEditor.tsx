@@ -24,10 +24,10 @@ export default function VraagEditor({ lesNr, vraag }: { lesNr: number; vraag: Vr
         body: JSON.stringify({ les: lesNr, vraag: vraag.id, tekst, antwoord, kernTekst, need, invul, reproductieGoed, reproductieFout1, reproductieFout2 }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || data?.ok !== true) throw new Error("mislukt");
+      if (!res.ok || data?.ok !== true) throw new Error(data?.fout || "mislukt");
       setStatus("Opgeslagen.");
-    } catch {
-      setStatus("Opslaan is niet gelukt. Probeer het nog eens.");
+    } catch (e) {
+      setStatus("Opslaan is niet gelukt. " + (e instanceof Error && e.message !== "mislukt" ? e.message : "Probeer het nog eens."));
     } finally { setBezig(false); }
   }
 

@@ -23,6 +23,6 @@ export async function POST(req: NextRequest) {
   const { error } = await opslaanVraaginhoud(nr, vraagId, {
     tekst, antwoord, kern, need, invul, reproductieGoed, reproductieFout1, reproductieFout2,
   });
-  if (error) return NextResponse.json({ ok: false }, { status: 500 });
+  if (error) return NextResponse.json({ ok: false, fout: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

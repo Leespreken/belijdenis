@@ -12,6 +12,6 @@ export async function POST(req: NextRequest) {
   const bijlezenTitel = b.bijlezenTitel ? String(b.bijlezenTitel).slice(0, 300) : null;
   const bijlezenHtml = b.bijlezenHtml ? String(b.bijlezenHtml).slice(0, 200000) : null;
   const { error } = await opslaanLesinhoud(nr, { html, bijlezenTitel, bijlezenHtml });
-  if (error) return NextResponse.json({ ok: false }, { status: 500 });
+  if (error) return NextResponse.json({ ok: false, fout: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

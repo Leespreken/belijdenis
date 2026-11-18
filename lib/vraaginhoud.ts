@@ -25,11 +25,13 @@ export async function haalVraaginhoud(nr: number): Promise<Map<number, VraagInho
 }
 
 export async function opslaanVraaginhoud(nr: number, vraagId: number, v: VraagInhoud) {
-  return db().from("vraaginhoud").upsert({
+  const res = await db().from("vraaginhoud").upsert({
     les: nr, vraag: vraagId, tekst: v.tekst, antwoord: v.antwoord, kern: v.kern, need: v.need,
     invul: v.invul, reproductie_goed: v.reproductieGoed, reproductie_fout1: v.reproductieFout1, reproductie_fout2: v.reproductieFout2,
     bijgewerkt: new Date().toISOString(),
-  });
+  }, { onConflict: "les,vraag" });
+  if (res.error) console.error("opslaanVraaginhoud", res.error);
+  return res;
 }
 
 /** Les met per-vraag teksten/kernpunten/oefeningen uit de database, waar aanwezig. */

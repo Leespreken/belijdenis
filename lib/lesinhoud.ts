@@ -17,10 +17,12 @@ export async function haalAlleLesinhoud(): Promise<Map<number, Lesinhoud>> {
 }
 
 export async function opslaanLesinhoud(nr: number, inhoud: Lesinhoud) {
-  return db().from("lesinhoud").upsert({
+  const res = await db().from("lesinhoud").upsert({
     les: nr, html: inhoud.html, bijlezen_titel: inhoud.bijlezenTitel, bijlezen_html: inhoud.bijlezenHtml,
     bijgewerkt: new Date().toISOString(),
-  });
+  }, { onConflict: "les" });
+  if (res.error) console.error("opslaanLesinhoud", res.error);
+  return res;
 }
 
 /** Les met de teksten uit de database, als die er zijn; anders de teksten uit de code. */
