@@ -106,6 +106,12 @@ create table if not exists huiswerk (
 );
 alter table huiswerk enable row level security;
 
+-- Was deze tabel er al? Dan dit los uitvoeren om dubbele rijen (per catechisant+les) op te
+-- ruimen vóór de unieke index hieronder wordt gezet (de nieuwste rij per combinatie blijft staan):
+delete from huiswerk a using huiswerk b
+  where a.catechisant_id = b.catechisant_id and a.les = b.les and a.aangemaakt < b.aangemaakt;
+create unique index if not exists huiswerk_cat_les_uniek on huiswerk (catechisant_id, les);
+
 -- Opslag voor geüploade bijlagen (bijv. PDF's bij "Extra materiaal").
 insert into storage.buckets (id, name, public)
 values ('bijlagen', 'bijlagen', true)

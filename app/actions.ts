@@ -111,7 +111,16 @@ export async function nieuwHuiswerk(fd: FormData) {
   }
   if (!catIds.length) return;
 
-  await db().from("huiswerk").insert(catIds.map((id) => ({ catechisant_id: id, les, lezen, vragen, leren, bericht })));
+  for (const catId of catIds) {
+    const { data: bestaand } = await db().from("huiswerk").select("lezen,vragen,leren,bericht").match({ catechisant_id: catId, les }).maybeSingle();
+    await db().from("huiswerk").upsert({
+      catechisant_id: catId, les,
+      lezen: lezen || !!bestaand?.lezen,
+      vragen: [...new Set([...(bestaand?.vragen ?? []), ...vragen])],
+      leren: [...new Set([...(bestaand?.leren ?? []), ...leren])],
+      bericht: bericht ?? bestaand?.bericht ?? null,
+    }, { onConflict: "catechisant_id,les" });
+  }
 
   if (leren.length) {
     const vandaagDatum = vandaag();
