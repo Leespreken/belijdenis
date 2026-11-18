@@ -111,7 +111,8 @@ export default async function Beheer() {
           <label htmlFor="titel" style={{ marginTop: 8 }}>Titel</label><input id="titel" name="titel" type="text" required />
           <label htmlFor="bron" style={{ marginTop: 8 }}>Bron (krant, datum)</label><input id="bron" name="bron" type="text" />
           <label htmlFor="tekst" style={{ marginTop: 8 }}>Tekst (lege regel = nieuwe alinea)</label><textarea id="tekst" name="tekst" />
-          <label htmlFor="link" style={{ marginTop: 8 }}>Link naar bijlage (https://…, bijv. een PDF of artikel online; mag leeg)</label><input id="link" name="link" type="text" />
+          <label htmlFor="pdf" style={{ marginTop: 8 }}>PDF-bijlage uploaden (optioneel, max 20 MB)</label><input id="pdf" name="pdf" type="file" accept="application/pdf" />
+          <label htmlFor="link" style={{ marginTop: 8 }}>Of: link naar bijlage (https://…, bijv. een artikel online; alleen als er geen PDF is geüpload)</label><input id="link" name="link" type="text" />
           <div className="row"><button className="primary" type="submit">Toevoegen</button></div>
         </form>
       </div>

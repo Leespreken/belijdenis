@@ -45,11 +45,25 @@ export async function verwijderCatechisant(fd: FormData) {
 }
 export async function nieuweExtra(fd: FormData) {
   if (!isBeheerder()) return;
-  const link = String(fd.get("link") || "").trim();
+  let link = String(fd.get("link") || "").trim();
+  link = /^https:\/\//.test(link) ? link : "";
+
+  const bestand = fd.get("pdf");
+  if (bestand instanceof File && bestand.size > 0) {
+    if (bestand.type !== "application/pdf") return;
+    if (bestand.size > 20 * 1024 * 1024) return; // max 20 MB
+    const pad = `${crypto.randomUUID()}.pdf`;
+    const { error } = await db().storage.from("bijlagen").upload(pad, bestand, { contentType: "application/pdf" });
+    if (!error) {
+      const { data } = db().storage.from("bijlagen").getPublicUrl(pad);
+      link = data.publicUrl;
+    }
+  }
+
   await db().from("extra").insert({
     les: Number(fd.get("les")) || 3, titel: String(fd.get("titel") || "").slice(0, 200) || "Zonder titel",
     bron: String(fd.get("bron") || "").slice(0, 200) || null, tekst: String(fd.get("tekst") || "").slice(0, 60000),
-    link: /^https:\/\//.test(link) ? link : null,
+    link: link || null,
   });
   revalidatePath("/beheer"); revalidatePath("/les/" + (Number(fd.get("les")) || 3));
 }

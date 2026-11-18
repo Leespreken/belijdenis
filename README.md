@@ -46,3 +46,10 @@ Bij elke vraag kun je ook:
 Echt verwijderen van een vraag kan nog niet via het scherm (dat zou de al opgeslagen antwoorden van
 catechisanten kunnen wezen); gebruik in plaats daarvan de aan/uit-schakelaar. De lestitel, Bijbelverwijzing
 en overige verwijzingen (HC/NGB/DL/KB) zijn nog niet via het scherm te wijzigen.
+
+## Extra materiaal: PDF uploaden of een link
+Bij "Extra materiaal bij een les" op `/beheer` kun je een PDF rechtstreeks uploaden (max 20 MB) —
+die komt dan in Supabase Storage terecht (bucket `bijlagen`, openbaar leesbaar via een onraadbare
+bestandsnaam) en verschijnt bij de les als "📎 Bijlage openen". Je kunt in plaats daarvan ook een
+link naar een al online staand artikel of PDF invullen. Eenmalig nodig: voer de bijgewerkte
+`supabase/schema.sql` opnieuw uit (maakt de opslagbucket aan).

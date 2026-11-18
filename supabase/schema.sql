@@ -90,6 +90,15 @@ alter table vraaginhoud add column if not exists actief boolean not null default
 alter table vraaginhoud add column if not exists volgorde int;
 alter table vraaginhoud add column if not exists toegevoegd boolean not null default false;
 
+-- Opslag voor geüploade bijlagen (bijv. PDF's bij "Extra materiaal").
+insert into storage.buckets (id, name, public)
+values ('bijlagen', 'bijlagen', true)
+on conflict (id) do nothing;
+
+drop policy if exists "bijlagen zijn openbaar leesbaar" on storage.objects;
+create policy "bijlagen zijn openbaar leesbaar" on storage.objects
+  for select using (bucket_id = 'bijlagen');
+
 create or replace function tel_op(p_cat uuid, p_les int, p_tab text, p_secs int)
 returns void language sql as $$
   insert into activiteit (catechisant_id, les, dag, tab, secs)
