@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { huidige } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { LESSEN } from "@/lib/content";
+import { haalLesinhoud, metLesinhoud } from "@/lib/lesinhoud";
 import LesClient from "@/components/LesClient";
 import { uitloggen } from "@/app/actions";
 import Link from "next/link";
@@ -11,13 +12,15 @@ export const dynamic = "force-dynamic";
 export default async function LesPagina({ params }: { params: { n: string } }) {
   const c = await huidige();
   if (!c) redirect("/");
-  const les = LESSEN[Number(params.n)];
-  if (!les) notFound();
-  const [a, e, h] = await Promise.all([
-    db().from("antwoorden").select("vraag,antwoord,zelf").match({ catechisant_id: c.id, les: les.nr }),
-    db().from("extra").select("id,titel,bron,tekst,link").eq("les", les.nr).order("volgorde").order("aangemaakt"),
+  const basisLes = LESSEN[Number(params.n)];
+  if (!basisLes) notFound();
+  const [a, e, h, inhoud] = await Promise.all([
+    db().from("antwoorden").select("vraag,antwoord,zelf").match({ catechisant_id: c.id, les: basisLes.nr }),
+    db().from("extra").select("id,titel,bron,tekst,link").eq("les", basisLes.nr).order("volgorde").order("aangemaakt"),
     db().from("herhaling").select("vraag").match({ catechisant_id: c.id }).lte("volgende", vandaag()),
+    haalLesinhoud(basisLes.nr),
   ]);
+  const les = metLesinhoud(basisLes, inhoud);
   const teHerhalen = h.data?.length ?? 0;
   const volgorde = Object.values(LESSEN).sort((x, y) => x.nr - y.nr);
   const idx = volgorde.findIndex((x) => x.nr === les.nr);

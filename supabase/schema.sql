@@ -56,6 +56,14 @@ create table if not exists extra (
   aangemaakt timestamptz not null default now()
 );
 
+create table if not exists lesinhoud (
+  les int primary key,
+  html text not null,
+  bijlezen_titel text,
+  bijlezen_html text,
+  bijgewerkt timestamptz not null default now()
+);
+
 create or replace function tel_op(p_cat uuid, p_les int, p_tab text, p_secs int)
 returns void language sql as $$
   insert into activiteit (catechisant_id, les, dag, tab, secs)
@@ -70,3 +78,4 @@ alter table antwoorden enable row level security;
 alter table activiteit enable row level security;
 alter table herhaling enable row level security;
 alter table extra enable row level security;
+alter table lesinhoud enable row level security;

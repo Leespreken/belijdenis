@@ -38,7 +38,11 @@ export default async function Beheer() {
   return (
     <div className="wrap breed">
       <header className="top"><div><div className="kicker">Belijdeniscatechese Bethlehemkerk</div><h1>Overzicht catechisanten</h1></div>
-        <form action={beheerUit}><button className="klein" type="submit">Uitloggen</button></form></header>
+        <div className="row" style={{ marginTop: 0 }}>
+          <Link className="knop klein" href="/beheer/lessen">Lesteksten bewerken</Link>
+          <form action={beheerUit}><button className="klein" type="submit">Uitloggen</button></form>
+        </div>
+      </header>
 
       <div className="card">
         <div className="tablewrap">

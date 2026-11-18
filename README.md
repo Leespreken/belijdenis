@@ -22,5 +22,14 @@ Leer- en oefenomgeving bij de belijdeniscatechese (nu: les 3, *De belijdenisgesc
 De catechisanten hebben alleen een code. De database is alleen bereikbaar via de server (de tabellen hebben geen openbare toegang). De pagina's vragen zoekmachines niet te indexeren. Er worden alleen voornaam, antwoorden en tijden opgeslagen.
 
 ## Een nieuwe les toevoegen
-Een les staat in `lib/content.ts` (tekst, vragen, kernpunten, invuloefening). Les 3 is het voorbeeld.
+Een les staat in `lib/content.ts` (tekst, vragen, kernpunten, invuloefening, meerkeuze-opties).
 Extra materiaal (krantenartikel e.d.) voeg je zonder code toe op `/beheer`.
+
+## Lesteksten bewerken zonder code (`/beheer/lessen`)
+De lestekst (niet de vragen) kan vanaf nu direct in de browser bewerkt worden, met een eenvoudige
+tekstverwerker (WYSIWYG). Eenmalig nodig: voer de bijgewerkte `supabase/schema.sql` opnieuw uit in de
+Supabase *SQL Editor* (dit voegt alleen de nieuwe tabel `lesinhoud` toe; bestaande tabellen blijven
+ongemoeid). Ga daarna naar `/beheer/lessen`, klik op **"Vul ontbrekende lesteksten"** om de huidige
+teksten als startpunt in de database te zetten, en bewerk daarna per les.
+Vragen, kernpunten, invuloefeningen en meerkeuze-opties staan nog in `lib/content.ts` en zijn nog niet
+via het scherm te bewerken; dat is een volgende stap.

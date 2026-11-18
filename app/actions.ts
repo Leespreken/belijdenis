@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import { db } from "@/lib/db";
 import { isBeheerder, wachtwoordKlopt, wisBeheer, wisSessie, zetBeheer, zetSessie } from "@/lib/auth";
+import { LESSEN } from "@/lib/content";
+import { opslaanLesinhoud } from "@/lib/lesinhoud";
 
 export async function inloggen(_: unknown, fd: FormData) {
   const code = String(fd.get("code") || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -55,4 +57,15 @@ export async function verwijderExtra(fd: FormData) {
   if (!isBeheerder()) return;
   await db().from("extra").delete().eq("id", String(fd.get("id")));
   revalidatePath("/beheer");
+}
+
+export async function vulOntbrekendeLesteksten() {
+  if (!isBeheerder()) return;
+  const { data } = await db().from("lesinhoud").select("les");
+  const aanwezig = new Set((data ?? []).map((r) => r.les));
+  for (const les of Object.values(LESSEN)) {
+    if (aanwezig.has(les.nr)) continue;
+    await opslaanLesinhoud(les.nr, { html: les.html, bijlezenTitel: les.bijlezenTitel ?? null, bijlezenHtml: les.bijlezenHtml ?? null });
+  }
+  revalidatePath("/beheer/lessen");
 }
